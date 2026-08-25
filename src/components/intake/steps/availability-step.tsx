@@ -1,9 +1,8 @@
-import { Pressable, View } from 'react-native';
-
 import { ThemedText } from '@/components/themed-text';
 import { SelectedIndicator } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { AvailabilitySlot, DAYS_OF_WEEK, IntakeFormData, TIME_BLOCKS } from '@/types/intake';
+import { Pressable, View } from 'react-native';
 
 type AvailabilityStepProps = {
   value: IntakeFormData['availability'];

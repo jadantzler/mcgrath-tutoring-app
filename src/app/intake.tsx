@@ -1,3 +1,4 @@
+import { CircleCheck } from 'lucide-react-native';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -13,14 +14,20 @@ import { InterestStep, isInterestStepValid } from '@/components/intake/steps/int
 import { isStudentStepValid, StudentStep } from '@/components/intake/steps/student-step';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { MaxContentWidth, Spacing } from '@/constants/theme';
+import { BrandColors, MaxContentWidth, Spacing } from '@/constants/theme';
 import { submitIntake } from '@/lib/submit-intake';
 import { createEmptyIntakeFormData, IntakeFormData } from '@/types/intake';
 
-const STEP_LABELS = ['Student', 'Interest', 'Availability', 'Guardian', 'Consent'] as const;
+const CARD_BORDER = '#E9E4D8';
+const BADGE_BACKGROUND = '#EAF2EC';
 
-// TEMP — freshness probe, delete once the browser is confirmed on current code.
-const BUILD_STAMP = 'WIRED-SUPABASE-v1';
+const NEXT_STEPS = [
+  'Our team reviews the information you submitted.',
+  "We'll reach out using your preferred contact method.",
+  "Together, we'll schedule an introductory session.",
+];
+
+const STEP_LABELS = ['Student', 'Interest', 'Availability', 'Guardian', 'Consent'] as const;
 
 export default function IntakeScreen() {
   const [stepIndex, setStepIndex] = useState(0);
@@ -50,33 +57,27 @@ export default function IntakeScreen() {
   }, [stepIndex, formData]);
 
   const isLastStep = stepIndex === STEP_LABELS.length - 1;
-  const canSubmit = isCurrentStepValid && !isSubmitting;
 
   async function handleContinue() {
-    if (!canSubmit) return;
-    if (!isLastStep) {
-      setStepIndex((index) => index + 1);
+    if (!isCurrentStepValid) return;
+    if (isLastStep) {
+      setSubmitError(null);
+      setIsSubmitting(true);
+      try {
+        await submitIntake(formData);
+        setSubmitted(true);
+      } catch (error) {
+        // Stay on the Consent step and surface the failure rather than
+        // silently losing the guardian's answers — a network blip or a
+        // transient Supabase error shouldn't force them to redo the form.
+        console.error('Failed to submit intake form:', error);
+        setSubmitError('Something went wrong submitting your info. Please try again.');
+      } finally {
+        setIsSubmitting(false);
+      }
       return;
     }
-
-    // The confirmation screen is only shown after Supabase has actually
-    // accepted every row. Flipping `submitted` first would tell the guardian
-    // we have their student's info before we do.
-    setIsSubmitting(true);
-    setSubmitError(null);
-    try {
-      await submitIntake(formData);
-      setSubmitted(true);
-    } catch (error) {
-      console.error('[intake] submit failed', error);
-      setSubmitError(
-        error instanceof Error
-          ? error.message
-          : 'Something went wrong submitting the form. Please try again.',
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
+    setStepIndex((index) => index + 1);
   }
 
   function handleBack() {
@@ -84,18 +85,52 @@ export default function IntakeScreen() {
   }
 
   if (submitted) {
+    const guardianFirstName = formData.guardian.name.split(' ')[0] || 'there';
+    const studentPossessive = formData.student.name
+      ? `${formData.student.name}'s`
+      : "your student's";
+    const contactMethod = formData.guardian.contactPreference?.toLowerCase() ?? 'email';
+
     return (
       <ThemedView style={styles.container}>
-        <SafeAreaView style={styles.safeArea}>
-          <ThemedText type="title" style={styles.title}>
-            Thanks, {formData.guardian.name.split(' ')[0] || 'there'}!
-          </ThemedText>
-          <ThemedText type="default" themeColor="textSecondary" style={styles.centerText}>
-            We&apos;ve received{' '}
-            {formData.student.name ? `${formData.student.name}'s` : "your student's"} information
-            and will be in touch by {formData.guardian.contactPreference?.toLowerCase() ?? 'email'}{' '}
-            soon.
-          </ThemedText>
+        <SafeAreaView style={styles.confirmationSafeArea}>
+          <View style={styles.confirmationCard}>
+            <View style={styles.badge}>
+              <CircleCheck size={32} color={BrandColors.deepGreen} strokeWidth={1.75} />
+            </View>
+
+            <ThemedText type="title" style={styles.confirmationTitle}>
+              Thank You, {guardianFirstName}
+            </ThemedText>
+            <ThemedText
+              type="default"
+              themeColor="textSecondary"
+              style={styles.confirmationSubtitle}
+            >
+              We&apos;ve received {studentPossessive} information and will follow up by{' '}
+              {contactMethod} soon.
+            </ThemedText>
+
+            <View style={styles.divider} />
+
+            <ThemedText type="smallBold" style={styles.nextStepsHeading}>
+              What happens next
+            </ThemedText>
+            <View style={styles.nextSteps}>
+              {NEXT_STEPS.map((step, i) => (
+                <View key={step} style={styles.nextStepRow}>
+                  <View style={styles.nextStepNumberBadge}>
+                    <ThemedText type="small" style={styles.nextStepNumberText}>
+                      {i + 1}
+                    </ThemedText>
+                  </View>
+                  <ThemedText type="default" style={styles.nextStepText}>
+                    {step}
+                  </ThemedText>
+                </View>
+              ))}
+            </View>
+          </View>
         </SafeAreaView>
       </ThemedView>
     );
@@ -108,13 +143,6 @@ export default function IntakeScreen() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* TEMP — freshness probe, delete with BUILD_STAMP. */}
-          <View style={styles.buildStamp}>
-            <ThemedText type="smallBold" style={{ color: '#000000' }}>
-              BUILD {BUILD_STAMP}
-            </ThemedText>
-          </View>
-
           <ThemedText type="title" style={styles.title}>
             Student Sign-Up
           </ThemedText>
@@ -155,7 +183,7 @@ export default function IntakeScreen() {
           </View>
 
           {submitError ? (
-            <ThemedText type="small" style={styles.errorText}>
+            <ThemedText type="small" style={{ color: '#B3261E' }}>
               {submitError}
             </ThemedText>
           ) : null}
@@ -163,15 +191,17 @@ export default function IntakeScreen() {
           <View style={styles.navRow}>
             <Pressable
               onPress={handleBack}
-              disabled={stepIndex === 0 || isSubmitting}
+              disabled={stepIndex === 0}
               className={`rounded-lg px-5 py-3 ${stepIndex === 0 ? 'opacity-0' : 'opacity-100'}`}
             >
               <ThemedText type="default">Back</ThemedText>
             </Pressable>
             <Pressable
               onPress={handleContinue}
-              disabled={!canSubmit}
-              className={`rounded-lg px-6 py-3 ${canSubmit ? 'bg-gold' : 'bg-charcoal/20'}`}
+              disabled={!isCurrentStepValid || isSubmitting}
+              className={`rounded-lg px-6 py-3 ${
+                isCurrentStepValid && !isSubmitting ? 'bg-gold' : 'bg-charcoal/20'
+              }`}
             >
               <ThemedText type="default" style={{ color: '#FFFFFF' }}>
                 {isLastStep ? (isSubmitting ? 'Submitting…' : 'Submit') : 'Continue'}
@@ -215,17 +245,82 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: Spacing.three,
   },
-  centerText: {
+  confirmationSafeArea: {
+    flex: 1,
+    width: '100%',
+    maxWidth: MaxContentWidth,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.four,
+    paddingVertical: Spacing.six,
+  },
+  confirmationCard: {
+    width: '100%',
+    maxWidth: 440,
+    alignItems: 'center',
+    backgroundColor: BrandColors.white,
+    borderWidth: 1,
+    borderColor: CARD_BORDER,
+    borderRadius: Spacing.four,
+    padding: Spacing.five,
+  },
+  badge: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: BADGE_BACKGROUND,
+    marginBottom: Spacing.three,
+  },
+  confirmationTitle: {
+    fontFamily: 'serif',
+    fontSize: 26,
+    lineHeight: 32,
     textAlign: 'center',
   },
-  errorText: {
-    color: '#B3261E',
+  confirmationSubtitle: {
+    textAlign: 'center',
+    lineHeight: 22,
+    marginTop: Spacing.two,
   },
-  buildStamp: {
-    backgroundColor: '#FF00AA',
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 6,
+  divider: {
+    alignSelf: 'stretch',
+    height: 1,
+    backgroundColor: CARD_BORDER,
+    marginTop: Spacing.four,
+    marginBottom: Spacing.three,
+  },
+  nextStepsHeading: {
+    alignSelf: 'flex-start',
+    marginBottom: Spacing.two,
+  },
+  nextSteps: {
+    alignSelf: 'stretch',
+    gap: Spacing.two,
+  },
+  nextStepRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.two,
+  },
+  nextStepNumberBadge: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: BADGE_BACKGROUND,
+    marginTop: 1,
+  },
+  nextStepNumberText: {
+    color: BrandColors.deepGreen,
+    fontWeight: '700',
+    fontSize: 11,
+    lineHeight: 14,
+  },
+  nextStepText: {
+    flex: 1,
+    lineHeight: 21,
   },
 });

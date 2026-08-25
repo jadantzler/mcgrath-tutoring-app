@@ -38,9 +38,6 @@ export function StatsSection() {
             );
           })}
         </View>
-        <Text style={styles.disclaimer}>
-          Illustrative figures — replace with McGrath Tutoring&apos;s actual track record.
-        </Text>
       </View>
     </View>
   );
