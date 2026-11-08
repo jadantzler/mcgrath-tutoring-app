@@ -14,7 +14,6 @@ import { BrandColors, Fonts, MaxContentWidth, Spacing } from '@/constants/theme'
 
 const CARD_BORDER = '#E9E4D8';
 const QUOTE_COLOR = '#EFEBE0';
-const DISCLAIMER_COLOR = '#9B9588';
 
 const CARD_WIDTH = 320;
 const CARD_GAP = Spacing.four;
@@ -85,7 +84,7 @@ export function SuccessStoriesSection() {
               <Text style={styles.quote}>&quot;{story.quote}&quot;</Text>
               <View style={styles.cardFooter}>
                 <Text style={styles.name}>{story.name}</Text>
-                <Text style={styles.detail}>{story.detail}</Text>
+                {story.detail ? <Text style={styles.detail}>{story.detail}</Text> : null}
               </View>
             </View>
           ))}
@@ -147,7 +146,11 @@ const styles = StyleSheet.create({
     color: BrandColors.charcoal,
     marginBottom: Spacing.three,
   },
+  // Cards in the row stretch to the tallest one's height; `marginTop: 'auto'`
+  // pushes the footer to the bottom so names line up across cards even when
+  // the quotes differ in length.
   cardFooter: {
+    marginTop: 'auto',
     paddingTop: Spacing.three,
     borderTopWidth: 1,
     borderTopColor: QUOTE_COLOR,
@@ -162,11 +165,5 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: BrandColors.deepGreen,
     marginTop: 2,
-  },
-  disclaimer: {
-    fontSize: 11,
-    textAlign: 'center',
-    color: DISCLAIMER_COLOR,
-    marginTop: Spacing.four,
   },
 });

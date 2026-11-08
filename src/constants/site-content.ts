@@ -34,34 +34,30 @@ export const PILLARS: Pillar[] = [
 
 export type Story = {
   quote: string;
+  // Attribution is a role or first name only — never a student's full name,
+  // since most are minors.
   name: string;
-  detail: string;
+  // Optional result line (e.g. a score change). Only set it when the
+  // testimonial itself states the result — never fill one in.
+  detail?: string;
 };
 
 export const STORIES: Story[] = [
   {
     quote:
-      'Our son went from struggling to keep up in AP Biology to earning a 4 on the exam. Paul knew exactly where the gaps were and was able to help!',
-    name: 'Parent of an 11th grade student',
-    detail: 'AP Biology — exam score 2 → 4',
+      'Working with Paul was an incredibly positive experience. I genuinely enjoyed our sessions, as he was easy to talk to and made asking questions and working through mistakes feel comfortable. As someone with test anxiety, Paul made the ACT feel much more manageable and easy, and I went into every test feeling nothing less than prepared and confident. My score went up much higher just within the first month of working with him. I am so grateful to have had him and couldn’t have asked for a better tutor!',
+    name: 'Prospective college student',
   },
   {
     quote:
-      'The SAT prep was structured and calm — no stress, just steady progress every week. We saw the score move before we saw it on paper.',
-    name: 'Parent of a 12th grade student',
-    detail: 'SAT — 1120 → 1310',
+      'Working with Paul was one of the best decisions I made during my ACT prep. He’s incredibly personable and very easy to connect with, which made every session feel productive. He took the time to understand all my weaknesses and found a way to explain concepts that stuck. Thanks to his help, I was able to improve my score by 7 points, which helped me get into the school I’ve always wanted to attend. I’d recommend him to anyone who is looking to improve their score and gain confidence going into test day.',
+    name: 'ACT/SAT student',
+    detail: 'ACT — +7 points',
   },
   {
     quote:
-      'What stood out was how much they communicated with us. We always knew how our daughter was doing, session to session.',
-    name: 'Parent of a 10th grade student',
-    detail: 'AP Anatomy — C → A−',
-  },
-  {
-    quote:
-      'My child was struggling with their ACT.. After working with Paul, their score shot up from a 19 to a 30.',
-    name: 'Parent with a junior in high school',
-    detail: 'ACT — 19 → 30',
+      'Working with Paul absolutely changed the trajectory of my high school success and college admission process. Not only is he incredibly smart and skilled at what he does; he is also so patient, kind, and truly cares about his students. He gave me confidence to succeed with both his resources and also his constant support, reassurance, and belief in me. I am so grateful and couldn’t do it without him!',
+    name: 'ACT/SAT student',
   },
 ];
 
@@ -73,7 +69,7 @@ export type Stat = {
 export const STATS: Stat[] = [
   { value: '10+', label: 'Years Tutoring' },
   { value: '94%', label: 'Grade Improvement' },
-  { value: '180+', label: 'Point Avg. SAT Gain' },
+  { value: '+7', label: 'Point Avg. ACT Gain' },
   { value: '1:1', label: 'Every Session' },
 ];
 

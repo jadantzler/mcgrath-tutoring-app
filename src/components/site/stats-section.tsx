@@ -5,13 +5,12 @@ import { BrandColors, Fonts, MaxContentWidth, Spacing } from '@/constants/theme'
 import { useIsDesktop } from '@/hooks/use-is-desktop';
 
 const STAT_LABEL_COLOR = '#C9BE9E';
-const DISCLAIMER_COLOR = '#7C87A0';
 const DIVIDER_COLOR = 'rgba(255,255,255,0.15)';
 
 /**
  * The navy stats strip — 4 numbers in a row on desktop, 2x2 on mobile, with
  * a vertical divider between columns (skipped on the first item/column of
- * each row) and a small disclaimer underneath, exactly as in the wireframe.
+ * each row).
  */
 export function StatsSection() {
   const isDesktop = useIsDesktop();
@@ -80,11 +79,5 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     color: STAT_LABEL_COLOR,
     textAlign: 'center',
-  },
-  disclaimer: {
-    fontSize: 11,
-    textAlign: 'center',
-    color: DISCLAIMER_COLOR,
-    marginTop: Spacing.four,
   },
 });

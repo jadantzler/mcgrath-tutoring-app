@@ -33,7 +33,7 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
 
       <Text style={styles.body}>
         One-on-one tutoring built around your student — from ACT and SAT preparation to everyday
-        couresework like AP Biology and Anatomy. .
+        coursework like AP Biology and Anatomy.
       </Text>
 
       <CTAButton size="lg" onPress={onGetStarted} style={styles.cta}>
